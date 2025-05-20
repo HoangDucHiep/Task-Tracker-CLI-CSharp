@@ -14,11 +14,11 @@ if (taskManager == null)
     return;
 }
 
-taskManager.AddTask("This is the first task").Wait();
-Console.WriteLine("Task added successfully.");
+/* taskManager.AddTask("This is the Seconds task").Wait();
+Console.WriteLine("Task added successfully."); */
 
 
-/* var tasks = await taskManager.ListTasks();
+var tasks = await taskManager.ListTasks();
 
 if (tasks != null && tasks.Count > 0)
 {
@@ -31,4 +31,16 @@ if (tasks != null && tasks.Count > 0)
 else
 {
     Console.WriteLine("No tasks found.");
+}
+
+
+
+/* bool result = await taskManager.UpdateTask(2, "This is the second task");
+if (result)
+{
+    Console.WriteLine("Task updated successfully.");
+}
+else
+{
+    Console.WriteLine("Failed to update task.");
 } */

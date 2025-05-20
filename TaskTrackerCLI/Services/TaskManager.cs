@@ -1,5 +1,6 @@
 using System.Text.Json;
 using TaskManagerCLI.Models;
+using TaskManagerCLI.Utils;
 
 namespace TaskManagerCLI.Services;
 
@@ -12,90 +13,29 @@ public class TaskManager : ITaskManager
         _fileService = fileService;
     }
 
-    public Task<int> AddTask(string description)
+    public async Task<int> AddTask(string description)
     {
-        string dataFromFile;
-        try
-        {
-            dataFromFile = _fileService.ReadFileAsync("tasks.json").Result;
-        }
-        catch (Exception)
-        {
-            dataFromFile = string.Empty;
-        }
-
-        List<AppTask> tasks;
-
-        if (string.IsNullOrEmpty(dataFromFile))
-        {
-            tasks = new List<AppTask>();
-        }
-        else
-        {
-            try
-            {
-                tasks =
-                    JsonSerializer.Deserialize<List<AppTask>>(dataFromFile) ?? new List<AppTask>();
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"Error deserializing JSON: {ex.Message}");
-                return Task.FromResult(-1);
-            }
-        }
+        var tasks = await LoadTasksAsync();
 
         int newId = tasks.Count > 0 ? tasks.Max(t => t.Id) + 1 : 1;
 
         AppTask newTask = new AppTask(newId, description);
         tasks.Add(newTask);
 
-        try
-        {
-            string json = JsonSerializer.Serialize(
-                tasks,
-                new JsonSerializerOptions { WriteIndented = true }
-            );
-            _fileService.WriteFileAsync("tasks.json", json).Wait();
-            return Task.FromResult(newId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error writing file: {ex.Message}");
-            return Task.FromResult(-1);
-        }
+        await SaveTasksAsync(tasks);
+        return newId;
     }
 
-    public Task<List<AppTask>> ListTasks()
+    public async Task<List<AppTask>> ListTasks(Models.TaskStatus? filterStatus = null)
     {
-        string dataFromFile;
-        try
+        var tasks = await LoadTasksAsync();
+
+        if (filterStatus.HasValue)
         {
-            dataFromFile = _fileService.ReadFileAsync("tasks.json").Result;
-        }
-        catch (Exception)
-        {
-            dataFromFile = string.Empty;
+            tasks = tasks.Where(t => t.Status == filterStatus.Value).ToList();
         }
 
-        List<AppTask> tasks;
-        if (string.IsNullOrEmpty(dataFromFile))
-        {
-            tasks = new List<AppTask>();
-        }
-        else
-        {
-            try
-            {
-                tasks =
-                    JsonSerializer.Deserialize<List<AppTask>>(dataFromFile) ?? new List<AppTask>();
-            }
-            catch (JsonException ex)
-            {
-                throw new JsonException("Error deserializing JSON: ", ex);
-            }
-        }
-
-        return Task.FromResult(tasks);
+        return tasks;
     }
 
     public Task<bool> DeleteTask(int id)
@@ -113,8 +53,76 @@ public class TaskManager : ITaskManager
         throw new NotImplementedException();
     }
 
-    public Task<bool> UpdateTask(int id, string description)
+    public async Task<bool> UpdateTask(int id, string description)
     {
-        throw new NotImplementedException();
+        var tasks = await LoadTasksAsync();
+
+        AppTask? taskToUpdate = tasks.FirstOrDefault(t => t.Id == id);
+        if (taskToUpdate == null)
+        {
+            Console.WriteLine($"Task with ID {id} not found.");
+            return false;
+        }
+
+        taskToUpdate.Description = description;
+        taskToUpdate.UpdatedAt = DateTime.Now;
+
+        await SaveTasksAsync(tasks);
+        return true;
+    }
+
+    private async Task<List<AppTask>> LoadTasksAsync()
+    {
+        try
+        {
+            string dataFromFile = await _fileService.ReadFileAsync(Util.FILE_PATH);
+            if (string.IsNullOrEmpty(dataFromFile))
+            {
+                return new List<AppTask>();
+            }
+
+            return JsonSerializer.Deserialize<List<AppTask>>(dataFromFile) ?? new List<AppTask>();
+        }
+        catch (FileNotFoundException ex)
+        {
+            Console.WriteLine($"File not found: {ex.Message}");
+            return new List<AppTask>();
+        }
+        catch (JsonException ex)
+        {
+            throw new JsonException($"Error deserializing JSON: {ex.Message}");
+        }
+        catch (IOException ex)
+        {
+            throw new IOException($"Error reading file: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    private async Task SaveTasksAsync(List<AppTask> tasks)
+    {
+        try
+        {
+            string json = JsonSerializer.Serialize(
+                tasks,
+                new JsonSerializerOptions { WriteIndented = true }
+            );
+            await _fileService.WriteFileAsync(Util.FILE_PATH, json);
+        }
+        catch (JsonException ex)
+        {
+            throw new JsonException($"Error serializing JSON: {ex.Message}");
+        }
+        catch (IOException ex)
+        {
+            throw new IOException($"Error writing file: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error: {ex.Message}");
+        }
     }
 }
