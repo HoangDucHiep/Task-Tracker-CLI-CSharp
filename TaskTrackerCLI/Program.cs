@@ -17,6 +17,15 @@ if (taskManager == null)
 /* taskManager.AddTask("This is the Seconds task").Wait();
 Console.WriteLine("Task added successfully."); */
 
+bool deleteResult = await taskManager.DeleteTask(2);
+if (deleteResult)
+{
+    Console.WriteLine("Task deleted successfully.");
+}
+else
+{
+    Console.WriteLine("Failed to delete task.");
+}
 
 var tasks = await taskManager.ListTasks();
 

@@ -38,9 +38,21 @@ public class TaskManager : ITaskManager
         return tasks;
     }
 
-    public Task<bool> DeleteTask(int id)
+    public async Task<bool> DeleteTask(int id)
     {
-        throw new NotImplementedException();
+        var tasks = await LoadTasksAsync();
+
+        AppTask? taskToDelete = tasks.FirstOrDefault(t => t.Id == id);
+
+        if (taskToDelete == null)
+        {
+            Console.WriteLine($"Task with ID {id} not found.");
+            return false;
+        }
+
+        tasks.Remove(taskToDelete);
+        await SaveTasksAsync(tasks);
+        return true;
     }
 
     public Task<bool> MarkTaskAsDone(int id)
