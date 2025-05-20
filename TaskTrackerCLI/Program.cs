@@ -25,6 +25,9 @@ string command = args[0].ToLower();
 
 switch (command)
 {
+    case "help":
+        PrintHelps();
+        break;
     case "add":
         if (args.Length < 2)
         {
@@ -69,7 +72,7 @@ switch (command)
         }
 
         bool deleted = await taskManager.DeleteTask(id);
-        Console.WriteLine(deleted ? "Task deleted." : "Task not found.");
+        Console.WriteLine(deleted ? "Task deleted." : "Delete failed.");
         break;
     case "update":
         if (args.Length < 3 || !int.TryParse(args[1], out int updateId))
@@ -80,7 +83,7 @@ switch (command)
 
         string newDescription = args[2];
         bool updated = await taskManager.UpdateTask(updateId, newDescription);
-        Console.WriteLine(updated ? "Task updated." : "Task not found.");
+        Console.WriteLine(updated ? "Task updated." : "Update failed.");
         break;
     case "mark-in-progress":
         if (args.Length < 2 || !int.TryParse(args[1], out int inProgressId))
@@ -90,7 +93,7 @@ switch (command)
         }
 
         bool markedInProgress = await taskManager.UpdateTask(inProgressId, TaskStatus.in_progress);
-        Console.WriteLine(markedInProgress ? "Task marked as in progress." : "Task not found.");
+        Console.WriteLine(markedInProgress ? "Task marked as in progress." : "Update failed.");
         break;
     case "mark-done":
         if (args.Length < 2 || !int.TryParse(args[1], out int doneId))
@@ -100,8 +103,21 @@ switch (command)
         }
 
         bool markedDone = await taskManager.UpdateTask(doneId, TaskStatus.done);
-        Console.WriteLine(markedDone ? "Task marked as done." : "Task not found.");
+        Console.WriteLine(markedDone ? "Task marked as done." : "Update failed.");
         break;
+}
+
+static void PrintHelps()
+{
+    Console.WriteLine("Usage:");
+    Console.WriteLine("  add <description>         Add a new task with the given description.");
+    Console.WriteLine(
+        "  list [<status>]          List all tasks or filter by status (todo, in_progress, done)."
+    );
+    Console.WriteLine("  delete <id>              Delete a task by its ID.");
+    Console.WriteLine("  update <id> <description> Update a task's description by its ID.");
+    Console.WriteLine("  mark-in-progress <id>     Mark a task as in progress by its ID.");
+    Console.WriteLine("  mark-done <id>           Mark a task as done by its ID.");
 }
 
 static void PrintTasks(List<AppTask> tasks)

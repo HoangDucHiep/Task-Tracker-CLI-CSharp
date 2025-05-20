@@ -86,9 +86,8 @@ public class TaskManager : ITaskManager
 
             return JsonSerializer.Deserialize<List<AppTask>>(dataFromFile) ?? new List<AppTask>();
         }
-        catch (FileNotFoundException ex)
+        catch (FileNotFoundException)
         {
-            Console.WriteLine($"File not found: {ex.Message}");
             return new List<AppTask>();
         }
         catch (JsonException ex)
