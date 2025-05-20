@@ -55,7 +55,6 @@ public class TaskManager : ITaskManager
         return true;
     }
 
-
     public async Task<bool> UpdateTask(int id, string description)
     {
         var tasks = await LoadTasksAsync();

@@ -11,12 +11,15 @@ Clone the repository and run the following command:
 
 ```powershell
 git clone https://github.com/HoangDucHiep/Task-Tracker-CLI-CSharp.git
-
+cd .\TaskTrackerCLI\
 ```
 
 ### Usage:
 
 ```c#
+# Get list of all commands
+dotnet run help
+
 # Adding a new task
 dotnet run add "Buy groceries"
 # Output: Task added successfully (ID: 1)
