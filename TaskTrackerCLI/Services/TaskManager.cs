@@ -55,15 +55,6 @@ public class TaskManager : ITaskManager
         return true;
     }
 
-    public Task<bool> MarkTaskAsDone(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> MarkTaskAsInProgress(int id)
-    {
-        throw new NotImplementedException();
-    }
 
     public async Task<bool> UpdateTask(int id, string description)
     {
@@ -136,5 +127,23 @@ public class TaskManager : ITaskManager
         {
             throw new Exception($"Unexpected error: {ex.Message}");
         }
+    }
+
+    public Task<bool> UpdateTask(int id, Models.TaskStatus status)
+    {
+        var tasks = LoadTasksAsync().Result;
+
+        AppTask? taskToUpdate = tasks.FirstOrDefault(t => t.Id == id);
+        if (taskToUpdate == null)
+        {
+            Console.WriteLine($"Task with ID {id} not found.");
+            return Task.FromResult(false);
+        }
+
+        taskToUpdate.Status = status;
+        taskToUpdate.UpdatedAt = DateTime.Now;
+
+        SaveTasksAsync(tasks).Wait();
+        return Task.FromResult(true);
     }
 }

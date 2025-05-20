@@ -14,10 +14,10 @@ if (taskManager == null)
     return;
 }
 
-/* taskManager.AddTask("This is the Seconds task").Wait();
+/* taskManager.AddTask("This is the second task").Wait();
 Console.WriteLine("Task added successfully."); */
 
-bool deleteResult = await taskManager.DeleteTask(2);
+/* bool deleteResult = await taskManager.DeleteTask(2);
 if (deleteResult)
 {
     Console.WriteLine("Task deleted successfully.");
@@ -26,6 +26,12 @@ else
 {
     Console.WriteLine("Failed to delete task.");
 }
+ */
+
+await taskManager.UpdateTask(1, TaskManagerCLI.Models.TaskStatus.done);
+await taskManager.UpdateTask(2, TaskManagerCLI.Models.TaskStatus.in_progress);
+
+
 
 var tasks = await taskManager.ListTasks();
 
